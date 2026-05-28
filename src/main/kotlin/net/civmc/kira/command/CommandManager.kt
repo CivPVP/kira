@@ -1,6 +1,7 @@
 package net.civmc.kira.command
 
 import com.github.maxopoly.kira.KiraMain
+import net.civmc.kira.command.api.ApiCommand
 import net.civmc.kira.command.user.*
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction
 import kotlin.math.log
@@ -31,7 +32,7 @@ object CommandManager {
             // Relay Commands
             // TODO
             // API Commands
-            // TODO
+            ApiCommand(logger, userManager),
     )
 
     fun registerCommands() {
