@@ -17,14 +17,15 @@ class QuoteCommand(logger: Logger, userManager: UserManager) : Command(logger, u
     private val quoteHandler = QuoteHandler()
 
     override fun dispatchCommand(event: SlashCommandInteractionEvent, sender: InputSupplier) {
-        val quote = try {
-            quoteHandler.getQuote()
+        event.deferReply().queue()
+        val reply = try {
+            val quote = quoteHandler.getQuote()
+            quote.getQuote() + "\n" + " - " + quote.getAuthor()
         } catch (e: Exception) {
-            e.printStackTrace()
-            event.reply("Sometimes things dont go the way we expect them to").queue()
-            return
+            logger.error("Failed to fetch quote", e)
+            "Sometimes things dont go the way we expect them to"
         }
-        event.reply(quote.getQuote() + "\n" + " - " + quote.getAuthor()).queue()
+        event.hook.editOriginal(reply).queue()
     }
 
     override fun getCommandData() = Commands.slash("quote", "Gives life advice")

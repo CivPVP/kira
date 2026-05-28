@@ -23,6 +23,10 @@ class ApiCommand(logger: Logger, userManager: UserManager) : Command(logger, use
     override fun getCommandData(): SlashCommandData {
         return Commands.slash("api", "API token management").addSubcommandGroups(
             SubcommandGroupData("token", "Manage API tokens").addSubcommands(
+                // Note: upstream's prefix command accepted a list of types in a single
+                // call. Discord slash commands don't naturally model variadic options,
+                // so this port simplifies to one type per invocation. Users wanting
+                // multiple permissions on one token will need multiple invocations.
                 SubcommandData("new", "Generate a new API token")
                     .addOption(OptionType.STRING, "type", "Token type (SNITCH, CHAT, or SKYNET)", true)
                     .addOption(OptionType.STRING, "server", "Target server name (default: first configured)", false),
@@ -35,14 +39,14 @@ class ApiCommand(logger: Logger, userManager: UserManager) : Command(logger, use
 
     override fun dispatchCommand(event: SlashCommandInteractionEvent, sender: InputSupplier) {
         if (event.subcommandGroup != "token") {
-            event.reply("Unknown subcommand group").queue()
+            event.reply("Unknown subcommand group").setEphemeral(true).queue()
             return
         }
         when (event.subcommandName) {
             "new"    -> handleNew(event, sender)
             "list"   -> handleList(event, sender)
             "revoke" -> handleRevoke(event, sender)
-            else     -> event.reply("Unknown subcommand").queue()
+            else     -> event.reply("Unknown subcommand").setEphemeral(true).queue()
         }
     }
 
@@ -83,6 +87,14 @@ class ApiCommand(logger: Logger, userManager: UserManager) : Command(logger, use
         // publicly to the channel. Making it ephemeral requires routing the async
         // callback through the interaction hook (deferReply + editOriginal) and
         // plumbing the hook into the supplier or APIPermissionRequest callback.
+        //
+        // Cleanest fix: introduce an InteractionHookInputSupplier in
+        // net.civmc.kira.command that wraps an InteractionHook and routes
+        // reportBack() to hook.sendMessage(msg).setEphemeral(true).queue();
+        // then have Command.onSlashCommandInteraction construct that supplier
+        // (instead of DiscordCommandChannelSupplier) for slash invocations.
+        // APIPermissionRequest stays unchanged.
+        //
         // Tracked as follow-up; for now this matches upstream behavior.
         event.reply("Contacting ingame server to retrieve group permission data").setEphemeral(true).queue()
     }
@@ -114,6 +126,7 @@ class ApiCommand(logger: Logger, userManager: UserManager) : Command(logger, use
                 sb.append(", Expires in: ")
                 sb.append((expireTime - System.currentTimeMillis()) / (1000 * 60))
                 sb.append(" minutes")
+                sb.append("\n")
             }
         }
         event.reply(sb.toString()).setEphemeral(true).queue()
