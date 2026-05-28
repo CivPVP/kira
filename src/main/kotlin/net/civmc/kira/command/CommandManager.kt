@@ -1,6 +1,7 @@
 package net.civmc.kira.command
 
 import com.github.maxopoly.kira.KiraMain
+import net.civmc.kira.command.admin.AdminCommand
 import net.civmc.kira.command.api.ApiCommand
 import net.civmc.kira.command.relay.RelayCommand
 import net.civmc.kira.command.user.*
@@ -20,7 +21,7 @@ object CommandManager {
 
     val commands = listOf(
             // Admin Commands
-            // TODO
+            AdminCommand(logger, userManager),
             // User Commands
             AuthCommand(logger, userManager),
             HelpCommand(logger, userManager),
