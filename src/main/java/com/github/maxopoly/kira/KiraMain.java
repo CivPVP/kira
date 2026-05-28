@@ -5,7 +5,6 @@ import com.github.maxopoly.kira.command.model.discord.CommandHandler;
 import com.github.maxopoly.kira.command.model.discord.CommandLineInputSupplier;
 import com.github.maxopoly.kira.database.DAO;
 import com.github.maxopoly.kira.database.DBConnection;
-import com.github.maxopoly.kira.listener.DiscordMessageListener;
 import com.github.maxopoly.kira.patreon.PatreonSync;
 import com.github.maxopoly.kira.permission.KiraRoleManager;
 import com.github.maxopoly.kira.rabbit.MinecraftRabbitGateway;
@@ -19,6 +18,7 @@ import com.github.maxopoly.kira.user.KiraUser;
 import com.github.maxopoly.kira.user.UserManager;
 import com.rabbitmq.client.ConnectionFactory;
 import net.civmc.kira.command.CommandManager;
+import net.civmc.kira.listener.RelayMessageListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -226,7 +226,7 @@ public class KiraMain {
 
 	private boolean setupListeners() {
 		jda.addEventListener(
-				new DiscordMessageListener(commandHandler, logger, userManager, jda.getSelfUser().getIdLong()));
+				new RelayMessageListener(userManager, jda.getSelfUser().getIdLong()));
 		return true;
 	}
 
