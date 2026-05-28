@@ -1,14 +1,32 @@
+# Kira
+logs/
+config.json
+local/
+
+# Editors
+## IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+## VIM
+*.swp
+
 # Gradle
 .gradle/
 build/
-out/
-*.iml
-.idea/
+run*/
+classes/
 
-# Local dev secrets — NEVER commit these
-dev/config.json
-local/
-/config.json
-
-# OS
+# MacOS
+*/.DS_Store
 .DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Local dev secrets (CivPVP fork)
+dev/config.json

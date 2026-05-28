@@ -1,0 +1,102 @@
+package com.github.maxopoly.kira.rabbit.input;
+
+import com.github.maxopoly.kira.KiraMain;
+import com.github.maxopoly.kira.relay.GroupId;
+import com.github.maxopoly.kira.rabbit.RabbitInputSupplier;
+import com.github.maxopoly.kira.relay.GroupChat;
+import com.github.maxopoly.kira.relay.GroupChatManager;
+import com.github.maxopoly.kira.user.KiraUser;
+import com.github.maxopoly.kira.user.UserManager;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+public class CreateGroupChatMessage extends RabbitMessage {
+
+	public CreateGroupChatMessage() {
+		super("creategroupchat");
+	}
+
+	@Override
+	public void handle(JSONObject json, RabbitInputSupplier supplier) {
+        String server = json.getString("server");
+        if (server == null) {
+            return; // old message
+        }
+        UUID creatorUUID = UUID.fromString(json.getString("creator"));
+		KiraUser creator = KiraMain.getInstance().getUserManager().getUserByIngameUUID(creatorUUID);
+		if (creator == null) {
+			KiraMain.getInstance().getMCRabbitGateway().sendMessage(server, creatorUUID,
+					"Channel creation failed, " + "no discord account tied");
+			return;
+		}
+		String group = json.getString("group");
+		GroupChatManager man = KiraMain.getInstance().getGroupChatManager();
+		GroupChat chat = man.getGroupChat(new GroupId(server, group.toLowerCase()));
+		if (chat != null) {
+			KiraMain.getInstance().getMCRabbitGateway().sendMessage(server, creatorUUID,
+					"Channel creation failed, a channel for this group already exists");
+			return;
+		}
+		float alreadyOwned = man.getOwnedChatCount(creator);
+		float limit = GroupChatManager.getChatCountLimit();
+		if (alreadyOwned >= limit) {
+			KiraMain.getInstance().getMCRabbitGateway().sendMessage(server, creatorUUID,
+					"Channel creation failed, you have reached the maximum amount of linked channels possible ("
+							+ limit + ")");
+			return;
+		}
+		long channelID = json.optLong("channelID", -1L);
+		long guildID = json.optLong("guildID", -1L);
+		logger.info("Attempting creation of chat for " + group + " as initiated by " + creator.toString());
+		if (channelID == -1) {
+            if (!KiraMain.getInstance().getKiraRoleManager().hasPermission(creator, "admin")) {
+                KiraMain.getInstance().getMCRabbitGateway().sendMessage(server, creatorUUID,
+                        "You cannot create a chanel here.");
+                return;
+            }
+			// locally in own discord
+			chat = man.createGroupChat(group, server, creator);
+		} else {
+			// whereever requested
+			chat = man.createGroupChat(group, server, guildID, channelID, creator);
+		}
+		if (chat == null) {
+			KiraMain.getInstance().getMCRabbitGateway().sendMessage(server, creatorUUID,
+					"Channel creation failed, " + "ask an admin about this");
+			return;
+		}
+		JSONArray memberArray = json.getJSONArray("members");
+		Set<Integer> shouldBeMembers = new HashSet<>();
+		UserManager userMan = KiraMain.getInstance().getUserManager();
+		for (int i = 0; i < memberArray.length(); i++) {
+			UUID uuid = UUID.fromString(memberArray.getString(i));
+			KiraUser user = userMan.getUserByIngameUUID(uuid);
+			if (user == null) {
+				continue;
+			}
+			shouldBeMembers.add(user.getID());
+		}
+		man.syncAccess(chat, shouldBeMembers);
+		KiraMain.getInstance().getMCRabbitGateway().sendMessage(server, creatorUUID, "Created channel successfully");
+		JDA jda = KiraMain.getInstance().getJDA();
+		TextChannel channel = jda.getTextChannelById(chat.getDiscordChannelId());
+		if (channel != null) {
+			channel.getGuild().retrieveMemberById(creator.getDiscordID()).submit()
+					.whenComplete((mem, error) -> {
+						if (error != null) {
+							logger.error("Failed to get user to notify of channel creation");
+							return;
+						}
+
+						channel.sendMessage("Channel is ready " + mem.getAsMention()).queue();
+					});
+		}
+	}
+
+}
