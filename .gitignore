@@ -1,0 +1,14 @@
+# Gradle
+.gradle/
+build/
+out/
+*.iml
+.idea/
+
+# Local dev secrets — NEVER commit these
+dev/config.json
+local/
+/config.json
+
+# OS
+.DS_Store

@@ -1,0 +1,32 @@
+{
+  "db": {
+    "host": "postgres",
+    "port": 5432,
+    "database": "kira",
+    "user": "kira",
+    "password": "REPLACE_WITH_POSTGRES_PASSWORD"
+  },
+  "rabbitmq": {
+    "host": "rabbitmq",
+    "port": 5672,
+    "user": "kira",
+    "password": "REPLACE_WITH_RABBITMQ_PASSWORD",
+    "incomingQueue": "gateway-to-kira",
+    "outgoingQueue": "kira-to-gateway"
+  },
+  "bot": {
+    "serverid": "REPLACE_WITH_TEST_GUILD_ID",
+    "authroleid": "REPLACE_WITH_TEST_AUTH_ROLE_ID",
+    "token": "REPLACE_WITH_TEST_DISCORD_BOT_TOKEN"
+  },
+  "api": {
+    "address": "localhost",
+    "port": 80,
+    "sslCertPassword": null,
+    "sslCertPath": null
+  },
+  "consoleforward": {},
+  "apirate": "500ms",
+  "commandprefix": "!kira ",
+  "relayCategory": 0
+}
