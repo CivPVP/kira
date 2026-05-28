@@ -19,9 +19,11 @@ class AdminCommand(logger: Logger, userManager: UserManager) : Command(logger, u
 
     override val name = "admin"
     override val global = false
-    // requiredPermission stays "default"; per-subcommand checks are done in dispatch.
-    // Top-level command is hidden by DefaultMemberPermissions.DISABLED — admins
-    // must grant access explicitly via Server Settings → Integrations.
+    // Gate the whole command tree on the "admin" kira permission. This also
+    // hides /admin from /help for non-admins (HelpCommand filters by perm).
+    // Discord-side DefaultMemberPermissions.DISABLED is a separate gate that
+    // server owners bypass; this one is authoritative.
+    override val requiredPermission = "admin"
 
     override fun getCommandData(): SlashCommandData {
         return Commands.slash("admin", "Bot administration")
