@@ -22,8 +22,10 @@ object CommandManager {
             // User Commands
             AuthCommand(logger, userManager),
             HelpCommand(logger, userManager),
+            InfoCommand(logger, userManager),
             IngameCommand(logger, userManager),
             InviteCommand(logger, userManager),
+            QuoteCommand(logger, userManager),
             UpdateRolesCommand(logger, userManager),
             WhoAmICommand(logger, userManager),
             // Relay Commands
