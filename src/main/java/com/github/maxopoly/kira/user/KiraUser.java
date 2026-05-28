@@ -2,8 +2,6 @@ package com.github.maxopoly.kira.user;
 
 import java.util.UUID;
 
-import net.dv8tion.jda.api.entities.User;
-
 public class KiraUser {
 
 	private int id;
@@ -11,7 +9,6 @@ public class KiraUser {
 	private long discordID;
 	private UUID uuid;
 	private String redditAccount;
-	private User discordUser; //we need to cache this to work around Discord limiting gateway intents
 
 	public KiraUser(int id, String name, long discordID, UUID uuid, String redditAccount) {
 		this.id = id;
@@ -19,14 +16,6 @@ public class KiraUser {
 		this.discordID = discordID;
 		this.uuid = uuid;
 		this.redditAccount = redditAccount;
-	}
-	
-	public void setCurrentDiscordUser(User user) {
-		this.discordUser = user;
-	}
-	
-	public User getCurrentDiscordUser() {
-		return discordUser;
 	}
 
 	public long getDiscordID() {

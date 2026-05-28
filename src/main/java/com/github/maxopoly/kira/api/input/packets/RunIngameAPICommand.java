@@ -6,11 +6,12 @@ import com.github.maxopoly.kira.KiraMain;
 import com.github.maxopoly.kira.api.input.APIInput;
 import com.github.maxopoly.kira.api.input.APISupplier;
 import com.github.maxopoly.kira.api.sessions.APIIngameCommandSession;
-import com.github.maxopoly.kira.command.discord.user.RunIngameCommand;
 
-import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class RunIngameAPICommand extends APIInput {
+
+	private static final Pattern commandPattern = Pattern.compile("[a-zA-Z0-9_\\- !?\\.]+");
 
 	public RunIngameAPICommand() {
 		super("in-game");
@@ -33,7 +34,7 @@ public class RunIngameAPICommand extends APIInput {
                 }
             }
         }
-		if (!RunIngameCommand.commandPattern.matcher(command).matches() || command.length() > 255) {
+		if (!commandPattern.matcher(command).matches() || command.length() > 255) {
 			return;
 		}
 		String id = argument.optString("identifier");

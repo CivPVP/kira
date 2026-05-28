@@ -6,7 +6,6 @@ import net.civmc.kira.command.api.ApiCommand
 import net.civmc.kira.command.relay.RelayCommand
 import net.civmc.kira.command.user.*
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction
-import kotlin.math.log
 
 object CommandManager {
 

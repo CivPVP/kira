@@ -1,8 +1,6 @@
 package com.github.maxopoly.kira;
 
 import com.github.maxopoly.kira.api.APISessionManager;
-import com.github.maxopoly.kira.command.model.discord.CommandHandler;
-import com.github.maxopoly.kira.command.model.discord.CommandLineInputSupplier;
 import com.github.maxopoly.kira.database.DAO;
 import com.github.maxopoly.kira.database.DBConnection;
 import com.github.maxopoly.kira.patreon.PatreonSync;
@@ -27,8 +25,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.Console;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -65,7 +61,6 @@ public class KiraMain {
 		if (!instance.startRabbit()) {
 			return;
 		}
-		instance.commandHandler = new CommandHandler(instance.logger);
 		if (!instance.loadGroupChats()) {
 			return;
 		}
@@ -81,14 +76,10 @@ public class KiraMain {
             PatreonSync sync = new PatreonSync(instance.configManager.getPatreonAccessToken(), instance.configManager.getPatreonCampaign(), instance.configManager.getPatreonServer());
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(sync, 1, 10, TimeUnit.MINUTES);
         }
-
-		instance.parseInput();
 	}
 
 	private Logger logger = LogManager.getLogger("Main");
 	private JDA jda;
-	private boolean shutdown = false;
-	private CommandHandler commandHandler;
 	private long guildId;
 	private UserManager userManager;
 	private ConfigManager configManager;
@@ -109,10 +100,6 @@ public class KiraMain {
 
 	public AuthManager getAuthManager() {
 		return authManager;
-	}
-
-	public CommandHandler getCommandHandler() {
-		return commandHandler;
 	}
 
     public ConfigManager getConfig() {
@@ -198,27 +185,6 @@ public class KiraMain {
 		return kiraRoleManager != null;
 	}
 
-	private void parseInput() {
-		Console c = System.console();
-		Scanner scanner = null;
-		if (c == null) {
-			logger.warn("System console not detected, using scanner as fallback behavior");
-			scanner = new Scanner(System.in);
-		}
-		while (!shutdown) {
-			String msg;
-			if (c == null) {
-				msg = scanner.nextLine();
-			} else {
-				msg = c.readLine("");
-			}
-			if (msg == null) {
-				continue;
-			}
-			commandHandler.handle(msg, new CommandLineInputSupplier());
-		}
-	}
-
 	private boolean setupAuthManager() {
 		roleManager = new DiscordRoleManager(configManager.getAuthroleID(), logger, userManager);
 		return true;
@@ -289,7 +255,6 @@ public class KiraMain {
 	public void stop() {
 		rabbit.shutdown();
 		apiSessionManager.shutdown();
-		shutdown = true;
 		new Thread(new Runnable() {
 
 			@Override
