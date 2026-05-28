@@ -1,6 +1,6 @@
 # Local dev environment
 
-> Prerequisite: Task 2 (vendoring CivMC/Kira v2.1.1) must have completed — it brings in `Dockerfile`, `docker-compose.yml`, and the Gradle build files this README depends on.
+> Prerequisite: Task 2 (vendoring upstream Kira source) must have completed — it brings in `Dockerfile`, `docker-compose.yml`, and the Gradle build files this README depends on.
 
 ## One-time Discord setup
 
@@ -13,9 +13,9 @@
 
 1. `cp dev/config.example.json dev/config.json` and fill in real values (token, guild ID, auth role ID = the `kira-admin` role ID for now).
 2. `cp dev/config.json config.json` — the upstream `docker-compose.yml` mounts `./config.json` into the kira container.
-3. `mise exec -- ./gradlew distTar` — builds `build/distributions/Kira-<version>.tar` that the Dockerfile consumes.
-4. `docker compose up --build` — boots Postgres + RabbitMQ + Kira. Wait for `Bot is ready` in logs.
-5. Smoke-test commands in your test guild. Ctrl-C and `docker compose down -v` to teardown (volumes wipe Postgres state).
+3. `mise exec -- ./gradlew distTar` — builds `build/distributions/kira-<version>.tar` that the Dockerfile consumes.
+4. `docker compose up --build` — boots Postgres + RabbitMQ + Kira. Wait until the kira container stops printing init logs and slash commands appear in your test guild's autocomplete (5–10 seconds).
+5. Smoke-test commands in your test guild. Ctrl-C and `docker compose down` to stop containers. To wipe Postgres state, also `rm -rf local/` (compose uses a bind mount, not a named volume, so `-v` is a no-op).
 
 ## Notes
 

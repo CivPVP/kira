@@ -2,15 +2,15 @@
   "db": {
     "host": "postgres",
     "port": 5432,
-    "database": "kira",
-    "user": "kira",
-    "password": "REPLACE_WITH_POSTGRES_PASSWORD"
+    "database": "postgres",
+    "user": "postgres",
+    "password": "postgres"
   },
   "rabbitmq": {
     "host": "rabbitmq",
     "port": 5672,
-    "user": "kira",
-    "password": "REPLACE_WITH_RABBITMQ_PASSWORD",
+    "user": "rabbitmq",
+    "password": "rabbitmq",
     "incomingQueue": "gateway-to-kira",
     "outgoingQueue": "kira-to-gateway"
   },
@@ -28,5 +28,6 @@
   "consoleforward": {},
   "apirate": "500ms",
   "commandprefix": "!kira ",
-  "relayCategory": 0
+  "relayCategory": 0,
+  "servers": ["main"]
 }
