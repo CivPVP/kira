@@ -27,7 +27,6 @@
   },
   "consoleforward": {},
   "apirate": "500ms",
-  "commandprefix": "!kira ",
   "relayCategory": 0,
   "servers": ["main"]
 }
