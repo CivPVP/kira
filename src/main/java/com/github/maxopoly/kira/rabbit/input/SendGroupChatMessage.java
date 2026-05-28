@@ -20,9 +20,9 @@ public class SendGroupChatMessage extends RabbitMessage {
 	public void handle(JSONObject json, RabbitInputSupplier supplier) {
         String server = json.getString("server");
 		String msg = json.getString("msg");
-		String sender = json.getString("sender");
 		String group = json.getString("group");
 		UUID senderUUID = UUID.fromString(json.getString("senderUUID"));
+		String sender = json.has("sender") ? json.getString("sender") : senderUUID.toString().substring(0, 8);
 		long timestamp = json.optLong("timestamp", System.currentTimeMillis());
 
 		GroupChatMessageAction action = new GroupChatMessageAction(timestamp, group, sender, senderUUID, msg);

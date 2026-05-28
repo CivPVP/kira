@@ -2,6 +2,7 @@ package net.civmc.kira.listener
 
 import com.github.maxopoly.kira.KiraMain
 import com.github.maxopoly.kira.user.UserManager
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
@@ -29,17 +30,14 @@ class RelayMessageListener(
         val message = sanitize(event.message.contentDisplay)
         if (message.isEmpty()) return
 
-        var delete = false
         for (chat in chats) {
             if (chat.config.shouldRelayFromDiscord()) {
                 KiraMain.getInstance().mcRabbitGateway
                     .sendGroupChatMessage(chat.server, user, chat, message)
             }
-            if (chat.config.shouldDeleteDiscordMessage()) {
-                delete = true
-            }
         }
-        if (delete) {
+        if (chats.any { it.config.shouldDeleteDiscordMessage() } &&
+            event.guild.selfMember.hasPermission(event.guildChannel, Permission.MESSAGE_MANAGE)) {
             event.message.delete().queue()
         }
     }

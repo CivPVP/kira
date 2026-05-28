@@ -5,7 +5,7 @@ import net.civmc.kira.command.admin.AdminCommand
 import net.civmc.kira.command.api.ApiCommand
 import net.civmc.kira.command.relay.RelayCommand
 import net.civmc.kira.command.user.*
-import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 
 object CommandManager {
 
@@ -18,10 +18,10 @@ object CommandManager {
     // TODO: Move this to config
     val devMode = false
 
+    private val relayCommand = RelayCommand(logger, userManager)
+
     val commands = listOf(
-            // Admin Commands
             AdminCommand(logger, userManager),
-            // User Commands
             AuthCommand(logger, userManager),
             HelpCommand(logger, userManager),
             InfoCommand(logger, userManager),
@@ -30,9 +30,7 @@ object CommandManager {
             QuoteCommand(logger, userManager),
             UpdateRolesCommand(logger, userManager),
             WhoAmICommand(logger, userManager),
-            // Relay Commands
-            RelayCommand(logger, userManager),
-            // API Commands
+            relayCommand,
             ApiCommand(logger, userManager),
     )
 
@@ -42,8 +40,13 @@ object CommandManager {
                 .addCommands(getGlobalCommands().map { it.getCommandData() })
                 .queue()
 
+        // Guild commands shadow globals of the same name, so a DISABLED-perms /relay
+        // here hides it from non-admins on the main guild only.
+        val relayShadow = relayCommand.getCommandData()
+                .setDefaultPermissions(DefaultMemberPermissions.DISABLED)
+
         jda.getGuildById(configManager.serverID)!!.updateCommands()
-                .addCommands(getGuildCommands().map { it.getCommandData() })
+                .addCommands(getGuildCommands().map { it.getCommandData() } + relayShadow)
                 .queue()
 
         jda.addEventListener(*commands.toTypedArray())

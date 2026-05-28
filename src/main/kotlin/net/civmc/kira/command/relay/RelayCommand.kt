@@ -32,8 +32,6 @@ import java.util.regex.PatternSyntaxException
 class RelayCommand(logger: Logger, userManager: UserManager) : Command(logger, userManager) {
 
     override val name = "relay"
-    override val global = false
-    // requiredPermission stays "default"; per-subcommand checks are done in dispatch.
 
     private val weightFormat = DecimalFormat("##.##")
     private val sampleUuid = UUID.fromString("8326bc56-1ed9-40ff-8f24-46bf3e300e51")
@@ -76,6 +74,13 @@ class RelayCommand(logger: Logger, userManager: UserManager) : Command(logger, u
     }
 
     override fun dispatchCommand(event: SlashCommandInteractionEvent, sender: InputSupplier) {
+        // Discord owners/admins bypass DefaultMemberPermissions.DISABLED — enforce in code too.
+        if (event.guild?.idLong == KiraMain.getInstance().config.serverID &&
+            !sender.hasPermission("admin")) {
+            event.reply("You don't have permission to use /relay in this server")
+                .setEphemeral(true).queue()
+            return
+        }
         val group = event.subcommandGroup
         val sub   = event.subcommandName
         when {
@@ -113,10 +118,6 @@ class RelayCommand(logger: Logger, userManager: UserManager) : Command(logger, u
         val channel = KiraMain.getInstance().getJDA().getTextChannelById(channelId)
         if (channel == null) {
             event.reply("Something went wrong, tell an admin").queue()
-            return
-        }
-        if (channel.guild.idLong == KiraMain.getInstance().getGuild().idLong && !sender.hasPermission("admin")) {
-            event.reply("You can't create relays here").queue()
             return
         }
         val servers = KiraMain.getInstance().getConfig().getServers()
